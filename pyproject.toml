@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "milu-agent"
-version = "0.1.0"
-description = "Offline expressive dog face prototype for Raspberry Pi 5"
+version = "0.2.0"
+description = "Milu face, optional text AI chat and explicit local memory for Raspberry Pi 5"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = ["pygame==2.6.1"]

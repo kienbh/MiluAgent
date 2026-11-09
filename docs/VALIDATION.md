@@ -1,38 +1,48 @@
-# Kiểm thử bản khuôn mặt ngoại tuyến
+# Kiểm thử bản 0.2
 
-## Phạm vi đã chạy
+## Môi trường và kết quả
 
-Môi trường: Linux x86_64, Python 3.12.14, Pygame 2.6.1, SDL dummy display. Đây là môi trường phát triển, không phải Raspberry Pi 5 hoặc LCD thật.
+Linux x86_64, Python 3.12.14, Pygame 2.6.1, SDL dummy display. Đây là môi trường phát triển, không phải Raspberry Pi 5 hoặc LCD HAT thật.
 
-- Cài đặt dự án thành công trong môi trường ảo mới bằng `python -m pip install -e .`.
-- `python -m pip check`: không phát hiện phụ thuộc hỏng.
-- `python -m unittest discover -s tests -v`: **24 kiểm thử đạt**.
+- `python -m unittest discover -s tests -v`: **66 kiểm thử đạt**.
 - `python -m compileall -q src tests`: đạt.
-- Ruff 0.17.4: `ruff check src tests` và `ruff format --check src tests` đều đạt.
-- `python -m milu --headless --seconds 1 --demo --screenshot artifacts/milu.png`: thoát thành công, tạo được PNG.
-- Lệnh `milu --headless --seconds 0.05 --state error` từ entry point đã cài: đạt.
-- Đã xem trực tiếp ảnh render của đủ 5 trạng thái ở 480 × 320: không thấy chữ hoặc khuôn mặt bị cắt.
+- Ruff 0.17.4: lint và kiểm tra định dạng đạt.
+- Cài lại bản 0.2 thành công trong môi trường ảo; `pip check` đạt. Không thêm phụ thuộc runtime ngoài Pygame.
+- Smoke test khuôn mặt và chat giả: chạy headless có giới hạn thời gian, tạo PNG và thoát thành công.
+- Đã xem trực tiếp ảnh 5 biểu cảm; kiểm tra ảnh chat có dấu tiếng Việt ở 480 × 320. Đã sửa font thiếu ký tự bằng font hệ thống hỗ trợ tiếng Việt, có kiểm thử ký tự đại diện. Ưu tiên đường dẫn font chuẩn của Debian/Pi OS để tránh timeout khi dò font bằng fontconfig.
 
-## Nội dung bộ kiểm thử
+## Phạm vi tự động
 
-- Trạng thái ban đầu, chọn thủ công, demo, chuyển vòng, nhấn lặp lại và đồng hồ lùi.
-- Phím 1–5, mũi tên, Space, H, Esc, Q và sự kiện đóng cửa sổ.
-- Năm trạng thái cho hình khác nhau; hoạt ảnh đổi khung hình theo thời gian.
-- Render ở các kích thước 480 × 320, 320 × 480, 240 × 160, 800 × 480 và bề mặt cực nhỏ.
-- Giữ tỷ lệ bằng khoảng trống trên màn hình dọc.
-- Giới hạn tham số, từ chối thời lượng không hợp lệ và yêu cầu headless không có thời điểm dừng.
-- Chạy vòng lặp headless, ghi PNG, đổi kích thước, đóng rồi mở lại và báo lỗi màn hình.
-- Dọn màn hình sau khi thoát; mixer không được khởi tạo.
+### Khuôn mặt và ứng dụng
 
-Workflow `.github/workflows/test.yml` chạy lint, định dạng, 24 kiểm thử, compile và smoke test trên GitHub Actions. Kết quả CI thực tế cần xem ở tab Actions của commit tương ứng.
+24 kiểm thử nền: trạng thái, demo, phím lặp, vòng chuyển, kích thước ngang/dọc/nhỏ, giữ tỷ lệ, hoạt ảnh, tham số lỗi, lưu ảnh, resize, đóng/mở lại và lỗi màn hình. Không khởi tạo mixer.
 
-## Chưa kiểm chứng
+### Hội thoại và giao diện chat
 
-- Cài đặt ARM, driver và đầu ra hiển thị trên Raspberry Pi 5.
-- Độ phân giải, cảm ứng, xoay màn hình và giao tiếp của LCD cụ thể.
-- Thao tác phím/đóng cửa sổ với trình quản lý cửa sổ thật; hiện đã kiểm tra bằng sự kiện giả lập.
-- Chế độ toàn màn hình trên thiết bị thật.
-- FPS thực tế, CPU, RAM, nhiệt độ và chạy dài trên Pi.
-- API, micro, loa, hội thoại và bộ nhớ: chưa triển khai trong bản này.
+22 kiểm thử: nhập tiếng Việt, giới hạn đầu vào, gửi/nhận, biểu cảm, ngữ cảnh tối đa bốn lượt, giới hạn số lần gọi, timeout, hủy, phản hồi cũ, worker duy nhất, lỗi không lộ dữ liệu, xóa ngữ cảnh, đóng phiên, cuộn, font, không xử lý lệnh gửi xếp sau sự kiện đóng, cấu hình cloud bắt buộc đồng ý và không gọi API khi chỉ mở ứng dụng.
 
-Không suy ra tương thích phần cứng từ kiểm thử headless. Dùng [checklist phần cứng](HARDWARE.md) cho bước tiếp theo.
+### Provider
+
+12 kiểm thử HTTP giả: đúng endpoint/payload/header, tách system cho Anthropic, parse văn bản/usage, từ chối cấu hình thiếu, không đoán mô hình, fake không gọi mạng, chặn redirect, không retry, lỗi xác thực/rate limit/timeout/mạng, JSON lỗi, phản hồi quá lớn và kết quả chưa hoàn thành.
+
+**Không có API call thật hoặc khóa thật trong kiểm thử.** Các bài này không xác nhận tài khoản có quyền dùng model hay dịch vụ đang hoạt động.
+
+### Bộ nhớ
+
+8 kiểm thử: Unicode, CRUD, lưu qua mở lại, giới hạn, rollback, quyền file, symlink/hardlink, file phụ SQLite, xác nhận và hủy, CLI, không nhận nội dung trên dòng lệnh, import/help không tạo nơi lưu mặc định.
+
+Không có bộ nhớ nào được đưa vào yêu cầu API. Database dùng dữ liệu giả trong thư mục tạm.
+
+## CI
+
+`.github/workflows/test.yml` chạy lint, định dạng, toàn bộ kiểm thử, compile và hai smoke test trên GitHub Actions. Xem tab Actions của đúng commit để biết kết quả CI hiện tại.
+
+## Chưa kiểm chứng hoặc chưa triển khai
+
+- Cài đặt ARM, driver/model LCD HAT, độ phân giải, cảm ứng, xoay màn hình và toàn màn hình thật.
+- CPU, RAM, nhiệt độ, FPS và chạy dài trên Pi.
+- Thao tác với bàn phím/IME và trình quản lý cửa sổ thật; các luồng hiện được kiểm tra bằng sự kiện giả lập và ảnh render.
+- Gọi OpenAI/Claude thật, chi phí, quyền model và mạng thật.
+- Giọng nói, micro/loa và bộ nhớ tích hợp vào câu trả lời.
+
+Timeout/cancel không bảo đảm dừng request đã gửi hoặc tránh bị nhà cung cấp tính phí. Bộ nhớ không mã hóa; xóa SQLite không bảo đảm xóa bản sao lưu/flash. Xem [hướng dẫn dữ liệu](CHAT_AND_MEMORY.md) và [checklist phần cứng](HARDWARE.md).

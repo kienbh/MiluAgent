@@ -1,16 +1,20 @@
 # MiluAgent
 
-Milu là dự án trợ lý AI mang hình tượng chú chó, hướng tới **Raspberry Pi 5** và thể hiện cảm xúc qua màn hình.
+Milu là trợ lý AI mang hình tượng chú chó, hướng tới **Raspberry Pi 5 với LCD HAT 3,5 inch**. Model màn hình, độ phân giải và driver cụ thể vẫn cần xác nhận.
 
-## Bản hiện tại: khuôn mặt ngoại tuyến
+## Bản hiện tại
 
-Đã có bản thử Python/Pygame với năm trạng thái, chớp mắt, chuyển động nhẹ, miệng nói và chế độ trình diễn. Bản này **không gọi API, không thu âm, không lưu hội thoại**. “Lắng nghe” và “đang nói” hiện chỉ là biểu cảm mô phỏng.
+- Khuôn mặt có 5 trạng thái, chớp mắt, chuyển động và demo ngoại tuyến.
+- Hội thoại văn bản tiếng Việt với mặt Milu đổi theo trạng thái xử lý/trả lời.
+- Phản hồi giả mặc định; adapter OpenAI/Claude chỉ hoạt động khi cấu hình và bật rõ ràng.
+- Giới hạn lượt gọi, ngữ cảnh, thời gian chờ; hủy và bỏ phản hồi cũ.
+- Bộ nhớ SQLite cục bộ với xem, thêm, sửa, xóa có xác nhận. Chưa tự đưa bộ nhớ vào hội thoại.
 
-Đã kiểm thử tự động trên Linux bằng màn hình giả lập. Chưa kiểm chứng trên Raspberry Pi 5, LCD thật hoặc thiết bị âm thanh. Mốc 0 và phần kiểm tra phần cứng của Mốc 1 còn mở.
+**Mặc định không gọi mạng, không thu âm và không lưu hội thoại.** Chưa có giọng nói hoặc kiểm chứng trên Pi 5/LCD thật. API được kiểm thử bằng HTTP giả, chưa gọi dịch vụ thật.
 
-## Chạy thử
+## Cài và chạy
 
-Cần Python 3.10 trở lên và môi trường đồ họa. Trong thư mục repository:
+Cần Linux với Python 3.10+, môi trường đồ họa và Pygame/SDL. Trong repository:
 
 ```sh
 python3 -m venv .venv
@@ -19,55 +23,55 @@ python -m pip install -e .
 python -m milu --demo
 ```
 
-Trên Raspberry Pi OS, nếu thiếu công cụ tạo môi trường ảo, cài gói `python3-venv` bằng trình quản lý gói của hệ điều hành trước. Thư viện Pygame phụ thuộc SDL; quá trình cài đặt trên đúng phiên bản Pi OS cần được kiểm tra thực tế.
+Nếu Raspberry Pi OS thiếu môi trường ảo hoặc font tiếng Việt, cần các gói hệ điều hành `python3-venv` và `fonts-dejavu-core`. Cài đặt Pygame trên ARM và driver LCD vẫn cần thử trên thiết bị thật.
 
-Mặc định cửa sổ là 480 × 320, **chỉ là kích thước giả định để phát triển**, không phải thông số LCD đã xác nhận:
+Thử hội thoại bằng phản hồi giả, không cần khóa API:
+
+```sh
+python -m milu --chat --width 800 --height 600
+```
+
+Gõ rồi Enter để gửi; Esc hủy chờ; Page Up/Down cuộn; Ctrl+L xóa ngữ cảnh; Ctrl+Q thoát.
+
+[Hướng dẫn cấu hình API và bộ nhớ](docs/CHAT_AND_MEMORY.md) giải thích dữ liệu được gửi, giới hạn và cách bật dịch vụ. Không đưa khóa API vào repo hoặc chat.
+
+### Màn hình và phím của chế độ khuôn mặt
 
 ```sh
 python -m milu --width 800 --height 480
 python -m milu --fullscreen --demo
 ```
 
-Toàn màn hình dùng độ phân giải hiện tại của hệ điều hành. Khuôn mặt giữ đúng tỷ lệ, thêm khoảng trống khi tỷ lệ màn hình khác. Ứng dụng cần màn hình mà SDL nhận được; chưa bao gồm driver LCD SPI hay cài đặt phần cứng.
+Mặc định 480 × 320 chỉ là kích thước phát triển, không phải thông số LCD đã xác nhận. Toàn màn hình dùng độ phân giải hiện tại của hệ điều hành. Ứng dụng giữ tỷ lệ khuôn mặt; chưa bao gồm driver LCD HAT/SPI.
 
-### Điều khiển
+- `1` chờ; `2` lắng nghe; `3` xử lý; `4` trả lời; `5` lỗi.
+- Mũi tên: chuyển trạng thái. `Space`: bật/tắt demo.
+- `H`: gợi ý phím. `Esc`, `Q` hoặc đóng cửa sổ: thoát.
+- Chế độ chat có phím riêng như hướng dẫn bên trên; không dùng `Q` đơn lẻ để thoát khi đang nhập văn bản.
 
-- `1`: chờ; `2`: lắng nghe; `3`: xử lý; `4`: trả lời; `5`: lỗi.
-- Mũi tên trái/phải: chuyển trạng thái.
-- `Space`: bật/tắt trình diễn, đổi trạng thái mỗi 3 giây.
-- Chọn trạng thái bằng tay sẽ tắt trình diễn.
-- `H`: ẩn/hiện gợi ý phím. `Esc`, `Q` hoặc đóng cửa sổ: thoát.
+Các nhãn biểu cảm là trạng thái giao diện, chưa phải hoạt động thu/phát âm thanh.
 
-Các nhãn trên LCD dùng tiếng Anh ngắn để dễ đọc ở màn hình nhỏ. Hướng dẫn dự án dùng tiếng Việt.
-
-## Kiểm thử không cần màn hình hoặc khóa API
-
-Sau khi cài đặt:
-
-```sh
-python -m unittest discover -s tests -v
-python -m compileall -q src tests
-python -m milu --headless --seconds 1 --demo --screenshot artifacts/milu.png
-```
-
-`--headless` bắt buộc có `--seconds` để không chạy vô hạn. `--screenshot` chỉ lưu khung hình ứng dụng tại đường dẫn cục bộ đã chỉ định. Thư mục `artifacts/` được loại khỏi Git.
-
-Kiểm tra định dạng và lỗi tĩnh (dành cho phát triển):
+## Kiểm thử không cần API hoặc thiết bị thật
 
 ```sh
 python -m pip install -e ".[dev]"
 ruff check src tests
 ruff format --check src tests
+python -m unittest discover -s tests -v
+python -m compileall -q src tests
+python -m milu --headless --seconds 1 --demo --screenshot artifacts/milu.png
+python -m milu --chat --headless --seconds 1 --screenshot artifacts/chat.png
 ```
 
-## Tài liệu và việc tiếp theo
+`--headless` bắt buộc có `--seconds` để kết thúc. Ảnh chụp có thể chứa văn bản hiển thị, nên xem kỹ trước khi chia sẻ; `artifacts/` không được Git theo dõi.
 
-- [Kế hoạch tổng thể](docs/PLAN.md)
-- [Quyết định kỹ thuật tạm thời và checklist phần cứng](docs/HARDWARE.md)
-- [Kết quả kiểm thử bản đầu](docs/VALIDATION.md)
+## Tài liệu
 
-Bước tiếp theo là xác định model LCD, độ phân giải, giao tiếp và kiểm thử khuôn mặt trên Pi 5. Sau đó thêm hội thoại văn bản theo Mốc 2. Dịch vụ API, mô hình, chi phí và bộ nhớ vẫn chưa chốt.
+- [Kế hoạch và tiến độ](docs/PLAN.md)
+- [Cấu hình tạm thời, checklist LCD/Pi](docs/HARDWARE.md)
+- [Hội thoại, API và bộ nhớ](docs/CHAT_AND_MEMORY.md)
+- [Kết quả và giới hạn kiểm thử](docs/VALIDATION.md)
 
 ## An toàn dữ liệu
 
-Repository công khai. Không đưa khóa API, bản ghi âm, lịch sử trò chuyện, dữ liệu bộ nhớ hoặc thông tin cá nhân vào Git. Dùng dữ liệu giả trong ví dụ và kiểm thử. Chưa áp dụng giấy phép phần mềm; chủ dự án sẽ chọn riêng.
+Repository công khai. Không đưa khóa API, âm thanh, lịch sử hội thoại, cơ sở dữ liệu bộ nhớ hoặc thông tin cá nhân vào Git. Chỉ dùng dữ liệu giả trong ví dụ và kiểm thử. Chưa áp dụng giấy phép phần mềm; chủ dự án sẽ chọn riêng.

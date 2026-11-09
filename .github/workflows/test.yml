@@ -1,4 +1,4 @@
-name: Offline prototype tests
+name: Milu tests (offline)
 
 on:
   push:
@@ -25,3 +25,4 @@ jobs:
       - run: python -m unittest discover -s tests -v
       - run: python -m compileall -q src tests
       - run: python -m milu --headless --seconds 1 --demo --screenshot artifacts/milu.png
+      - run: python -m milu --chat --headless --seconds 1 --screenshot artifacts/chat.png

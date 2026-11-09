@@ -1,4 +1,4 @@
-"""Offline display application. It never records audio or calls a service."""
+"""Milu face and optional text chat. Cloud access requires explicit configuration."""
 
 import argparse
 import math
@@ -34,7 +34,9 @@ def positive_seconds(value):
 
 
 def parser():
-    result = argparse.ArgumentParser(description="Milu offline face demo (no API, mic or memory).")
+    result = argparse.ArgumentParser(
+        description="Milu face demo and optional text chat. Offline by default."
+    )
     result.add_argument("--width", type=bounded_int(240, 3840), default=480)
     result.add_argument("--height", type=bounded_int(160, 2160), default=320)
     result.add_argument("--fps", type=bounded_int(1, 60), default=30)
@@ -52,7 +54,46 @@ def parser():
     result.add_argument(
         "--screenshot", type=Path, help="save the final frame as PNG at this local path"
     )
+    result.add_argument("--chat", action="store_true", help="enable text input and conversation")
+    result.add_argument("--provider", choices=("fake", "openai", "anthropic"), default="fake")
+    result.add_argument(
+        "--model", help="explicit cloud model ID; no cloud model is selected by default"
+    )
+    result.add_argument(
+        "--allow-cloud",
+        action="store_true",
+        help="allow typed messages and session context to go to the selected API",
+    )
+    result.add_argument("--timeout", type=positive_seconds, default=20.0)
+    result.add_argument("--max-requests", type=bounded_int(1, 100), default=20)
+    result.add_argument("--max-output-tokens", type=bounded_int(64, 2048), default=512)
     return result
+
+
+def create_conversation(args):
+    from milu.conversation import Conversation
+    from milu.providers import ProviderError, create_provider
+
+    if not args.chat:
+        if args.provider != "fake" or args.model or args.allow_cloud:
+            raise ValueError("Provider options require --chat.")
+        return None
+    if args.demo:
+        raise ValueError("--chat cannot be combined with --demo; conversation controls the face.")
+    if args.provider != "fake" and not args.allow_cloud:
+        raise ValueError(
+            "Cloud chat requires --allow-cloud. Typed messages and up to four prior turns will be sent to the selected provider."
+        )
+    try:
+        provider = create_provider(args.provider, model=args.model)
+    except ProviderError as error:
+        raise ValueError(str(error)) from None
+    return Conversation(
+        provider,
+        timeout=args.timeout,
+        max_requests=args.max_requests,
+        max_output_tokens=args.max_output_tokens,
+    )
 
 
 def handle_event(event, state, now):
@@ -97,6 +138,11 @@ def main(argv=None):
         print("Install the project first: python -m pip install -e .", file=sys.stderr)
         return 1
 
+    try:
+        conversation = create_conversation(args)
+    except (ValueError, RuntimeError) as error:
+        print(f"Cannot configure Milu: {error}", file=sys.stderr)
+        return 1
     # Only initialize the display and font modules, not the microphone/mixer.
     try:
         pygame.display.init()
@@ -104,8 +150,16 @@ def main(argv=None):
         flags = pygame.FULLSCREEN if args.fullscreen else pygame.RESIZABLE
         size = (0, 0) if args.fullscreen else (args.width, args.height)
         screen = pygame.display.set_mode(size, flags)
-        pygame.display.set_caption("Milu | Offline face demo")
+        pygame.display.set_caption(
+            "Milu | Text chat" if conversation else "Milu | Offline face demo"
+        )
         renderer = FaceRenderer()
+        chat_view = None
+        if conversation is not None:
+            from milu.ui.chat import ChatView
+
+            chat_view = ChatView(conversation)
+            pygame.key.start_text_input()
         started = time.monotonic()
         state = FaceState(Mood(args.state), demo=args.demo, entered_at=started)
         clock = pygame.time.Clock()
@@ -113,15 +167,23 @@ def main(argv=None):
             now = time.monotonic()
             should_quit = False
             for event in pygame.event.get():
-                if not handle_event(event, state, now):
+                keep_running = (
+                    chat_view.handle(event) if chat_view else handle_event(event, state, now)
+                )
+                if not keep_running:
                     should_quit = True
+                    break
                 elif event.type == pygame.VIDEORESIZE and not args.fullscreen:
                     size = (min(3840, max(240, event.w)), min(2160, max(160, event.h)))
                     screen = pygame.display.set_mode(size, flags)
             if should_quit:
                 break
-            state.tick(now)
-            renderer.draw(screen, state, now - started)
+            if chat_view:
+                conversation.poll()
+                chat_view.draw(screen, now - started)
+            else:
+                state.tick(now)
+                renderer.draw(screen, state, now - started)
             pygame.display.flip()
             if args.seconds is not None and now - started >= args.seconds:
                 break
@@ -136,6 +198,8 @@ def main(argv=None):
     except KeyboardInterrupt:
         return 0
     finally:
+        if conversation is not None:
+            conversation.close()
         pygame.quit()
     return 0
 

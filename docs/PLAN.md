@@ -4,7 +4,7 @@
 
 Milu là trợ lý AI mang hình tượng chú chó, chạy trên Raspberry Pi 5, có màn hình để biểu đạt cảm xúc.
 
-Tài liệu này là kế hoạch được cập nhật cùng tiến độ. Đã có bản thử khuôn mặt ngoại tuyến bằng Python/Pygame và bộ kiểm thử tự động. Chưa có cấu hình phần cứng đã kiểm chứng hoặc kết quả đo trên Raspberry Pi 5. Các mốc dưới đây thể hiện thứ tự làm việc, không phải cam kết thời hạn.
+Tài liệu này là kế hoạch được cập nhật cùng tiến độ. Đã có khuôn mặt, giao diện chat, bộ điều phối hội thoại, adapter OpenAI/Claude và bộ nhớ cục bộ có xác nhận. Mặc định vẫn dùng phản hồi giả, chưa gọi API thật; bộ nhớ chưa được đưa tự động vào hội thoại. Chưa có cấu hình phần cứng đã kiểm chứng hoặc kết quả đo trên Raspberry Pi 5. Các mốc dưới đây thể hiện thứ tự làm việc, không phải cam kết thời hạn.
 
 Xem [hướng dẫn chạy](../README.md), [cấu hình tạm thời](HARDWARE.md) và [kết quả kiểm thử](VALIDATION.md).
 
@@ -13,10 +13,11 @@ Xem [hướng dẫn chạy](../README.md), [cấu hình tạm thời](HARDWARE.m
 - Nền tảng chính: Raspberry Pi 5.
 - Hình tượng: chú chó Milu.
 - Giao diện: khuôn mặt và cảm xúc trên màn hình.
+- Màn hình LCD HAT 3,5 inch; chưa xác định model, độ phân giải và driver.
 
 ### Đề xuất cần xác nhận
 
-- Màn hình LCD 3,5 inch. Cần biết đúng model, độ phân giải, giao tiếp HDMI/DSI/SPI và trình điều khiển hỗ trợ Raspberry Pi 5.
+- Model LCD HAT 3,5 inch, độ phân giải, giao tiếp và trình điều khiển hỗ trợ Raspberry Pi 5. Không suy ra driver chỉ từ tên HAT.
 - Hội thoại tiếng Việt qua micro và loa.
 - Dùng API OpenAI hoặc Claude cho phần hội thoại. Chọn một nhà cung cấp trước, thiết kế lớp kết nối để có thể đổi sau.
 - Bộ nhớ riêng để lưu thông tin người dùng chủ động muốn Milu nhớ.
@@ -124,11 +125,11 @@ Thử màn hình bằng một hình tĩnh, rồi hoạt ảnh đơn giản. Th�
 
 ### Mốc 2: Hội thoại bằng văn bản
 
-- [ ] Tạo lớp kết nối cho một nhà cung cấp và một chế độ phản hồi giả.
-- [ ] Nhận văn bản, hiển thị trả lời và cập nhật biểu cảm.
-- [ ] Có thời gian chờ, giới hạn độ dài đầu vào/đầu ra và thông báo lỗi.
-- [ ] Cho phép hủy yêu cầu; không để câu trả lời cũ ghi đè lượt mới.
-- [ ] Ghi số lần gọi và mức sử dụng nếu API trả về, không ghi nội dung riêng tư.
+- [x] Tạo adapter OpenAI/Claude và phản hồi giả; kiểm thử HTTP giả, chưa gọi API thật.
+- [x] Nhận văn bản, hiển thị trả lời và cập nhật biểu cảm; đã thử bằng phản hồi giả.
+- [x] Có thời gian chờ giao diện, giới hạn độ dài đầu vào/đầu ra và thông báo lỗi an toàn.
+- [x] Cho phép hủy chờ; bỏ phản hồi cũ, không tạo thêm worker khi request trước chưa thoát.
+- [x] Giữ số lượt gọi và token trong RAM nếu API trả về; không ghi nội dung riêng tư ra nhật ký.
 
 **Hoàn thành khi:** hoàn tất một lượt hỏi đáp thật; các tình huống thiếu khóa, mất mạng, lỗi dịch vụ và hết thời gian chờ không làm ứng dụng treo.
 
@@ -144,10 +145,10 @@ Thử màn hình bằng một hình tĩnh, rồi hoạt ảnh đơn giản. Th�
 
 ### Mốc 4: Bộ nhớ có kiểm soát
 
-- [ ] Xây dựng cấu trúc lưu cục bộ.
-- [ ] Thêm thao tác ghi nhớ có xác nhận, xem, sửa và quên.
-- [ ] Giới hạn lượng bộ nhớ đưa vào mỗi yêu cầu API.
-- [ ] Kiểm thử xóa dữ liệu và việc không xuất dữ liệu vào nhật ký/Git.
+- [x] SQLite cục bộ, chỉ mở khi người dùng chủ động chạy công cụ bộ nhớ.
+- [x] Công cụ terminal thêm/xem/sửa/xóa, xác nhận trước mọi thay đổi.
+- [ ] Tích hợp truy xuất bộ nhớ có chọn lọc và giới hạn dữ liệu gửi tới API. Hiện không đọc/gửi bộ nhớ trong chat.
+- [x] Kiểm thử xóa, quyền riêng tư của file và lưu qua khởi động lại; dữ liệu bộ nhớ không nằm trong Git.
 
 **Hoàn thành khi:** lưu được thông tin mẫu qua lần khởi động lại, sửa/quên đúng mục và không truy xuất lại mục đã xóa.
 
@@ -163,7 +164,7 @@ Thử màn hình bằng một hình tĩnh, rồi hoạt ảnh đơn giản. Th�
 
 ## 7. Tổ chức mã nguồn dự kiến
 
-Đã tạo `src/milu/app.py`, `src/milu/state.py`, `src/milu/ui/` và `tests/`. Các phần hội thoại, API, âm thanh và bộ nhớ dưới đây là cấu trúc dự kiến cho các mốc sau:
+Đã tạo `src/milu/app.py`, `state.py`, `conversation.py`, `providers.py`, `memory.py`, `ui/` và `tests/`. Bản nhỏ dùng các module này trước; có thể tách thành các thư mục dưới đây khi dự án lớn hơn. Phần âm thanh chưa có:
 
 - `src/milu/ui/`: khuôn mặt và hoạt ảnh.
 - `src/milu/conversation/`: điều phối và trạng thái hội thoại.
@@ -188,5 +189,5 @@ Cấu trúc có thể điều chỉnh sau bản thử. Ưu tiên ít thành ph�
 
 ## 9. Bước tiếp theo
 
-Tiếp tục **Mốc 0 và Mốc 1**: xác định đúng model màn hình rồi chạy bản khuôn mặt ngoại tuyến trên Raspberry Pi 5. Phần mềm đã có thể chạy thử trên máy phát triển; chỉ chốt hoàn thành Mốc 1 sau khi kiểm tra kích thước hiển thị, thao tác thoát và độ ổn định trên thiết bị thật. Chưa cần khóa API cho bước này.
+Tiếp tục **Mốc 0 và Mốc 1**: xác định đúng model màn hình rồi chạy bản khuôn mặt ngoại tuyến trên Raspberry Pi 5. Phần mềm đã có thể chạy thử trên máy phát triển, gồm cả chat giả; chỉ chốt Mốc 1 sau khi kiểm tra thiết bị thật. Để hoàn tất Mốc 2 cần chọn mô hình/chi phí, tự cấu hình khóa tại máy và chạy một lượt API thật. Chưa cần khóa API để thử khuôn mặt, chat giả hoặc bộ nhớ cục bộ. Mốc 3 còn chờ phần âm thanh; Mốc 4 còn phần truy xuất bộ nhớ có kiểm soát vào hội thoại.
 

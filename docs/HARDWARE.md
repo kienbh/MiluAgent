@@ -6,8 +6,15 @@
 - Vẽ bằng hình học, không tải tài sản đồ họa từ bên ngoài.
 - Khung thiết kế 480 × 320, hiển thị giữ tỷ lệ theo cửa sổ hoặc màn hình thực tế.
 - 30 khung hình/giây mặc định; điều chỉnh bằng `--fps` trong khoảng 1–60.
-- Chỉ khởi tạo màn hình và font. Không khởi tạo mixer, micro, dịch vụ mạng hoặc bộ nhớ.
+- Chỉ khởi tạo màn hình và font ở chế độ khuôn mặt. Chat dùng phản hồi giả mặc định; cloud yêu cầu cấu hình và bật rõ ràng. Không khởi tạo mixer/micro hoặc mở bộ nhớ khi chạy giao diện.
 - Các quyết định này có thể đổi sau khi kiểm tra trên Pi, không khóa vào một model LCD.
+
+## Thông tin đã xác nhận
+
+- Raspberry Pi 5.
+- LCD HAT 3,5 inch cắm vào Pi.
+
+Chưa có model, độ phân giải hoặc driver. HAT không đủ để kết luận giao tiếp là SPI hay chọn lệnh cài driver.
 
 ## Chưa biết, cần ghi lại trên thiết bị
 

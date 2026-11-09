@@ -1,3 +1,3 @@
-"""Milu: a local, offline face prototype. No microphone or network access."""
+"""Milu face, optional text chat and explicit local memory. Offline by default."""
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"

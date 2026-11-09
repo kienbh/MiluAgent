@@ -39,13 +39,15 @@ class FaceRenderer:
         image = font.render(value, True, color)
         self.canvas.blit(image, image.get_rect(center=center))
 
-    def draw(self, target: pygame.Surface, state: FaceState, elapsed: float) -> None:
+    def draw(
+        self, target: pygame.Surface, state: FaceState, elapsed: float, *, badge: str = "OFFLINE"
+    ) -> None:
         canvas = self.canvas
         canvas.fill(BG)
         accent = ACCENTS[state.mood]
         self.text("M I L U", self.title_font, (228, 236, 231), (240, 28))
         pygame.draw.circle(canvas, accent, (430, 27), 4)
-        self.text("OFFLINE", self.small_font, (145, 162, 173), (392, 28))
+        self.text(badge, self.small_font, (145, 162, 173), (392, 28))
 
         # Soft oval behind the face; all artwork is drawn here, no downloads.
         pygame.draw.ellipse(canvas, (23, 42, 53), (121, 63, 238, 186))

@@ -4,7 +4,9 @@
 
 Milu là trợ lý AI mang hình tượng chú chó, chạy trên Raspberry Pi 5, có màn hình để biểu đạt cảm xúc.
 
-Tài liệu này là kế hoạch ban đầu. Chưa có mã nguồn, cấu hình phần cứng đã kiểm chứng hoặc kết quả đo hiệu năng. Các mốc dưới đây thể hiện thứ tự làm việc, không phải cam kết thời hạn.
+Tài liệu này là kế hoạch được cập nhật cùng tiến độ. Đã có bản thử khuôn mặt ngoại tuyến bằng Python/Pygame và bộ kiểm thử tự động. Chưa có cấu hình phần cứng đã kiểm chứng hoặc kết quả đo trên Raspberry Pi 5. Các mốc dưới đây thể hiện thứ tự làm việc, không phải cam kết thời hạn.
+
+Xem [hướng dẫn chạy](../README.md), [cấu hình tạm thời](HARDWARE.md) và [kết quả kiểm thử](VALIDATION.md).
 
 ### Đã xác định
 
@@ -107,14 +109,14 @@ Thử màn hình bằng một hình tĩnh, rồi hoạt ảnh đơn giản. Th�
 - [ ] Xác nhận model màn hình và thiết bị âm thanh.
 - [ ] Chọn hệ điều hành, thư viện giao diện và cách chạy ứng dụng.
 - [ ] Chọn một dịch vụ hội thoại, mô hình và mức chi phí thử nghiệm.
-- [ ] Ghi lại các quyết định cùng lý do.
+- [x] Ghi lại các quyết định tạm thời cùng lý do trong `docs/HARDWARE.md`.
 
 **Hoàn thành khi:** màn hình và các thiết bị cần cho bản thử hoạt động độc lập; các lựa chọn chưa rõ được ghi lại.
 
 ### Mốc 1: Khuôn mặt Milu
 
-- [ ] Vẽ khuôn mặt và các trạng thái chờ, lắng nghe, xử lý, trả lời, lỗi.
-- [ ] Cho phép đổi trạng thái bằng bàn phím.
+- [x] Vẽ khuôn mặt và các trạng thái chờ, lắng nghe, xử lý, trả lời, lỗi (mô phỏng ngoại tuyến).
+- [x] Cho phép đổi trạng thái bằng bàn phím, có kiểm thử tự động.
 - [ ] Chạy được ở đúng kích thước màn hình.
 - [ ] Đo độ mượt, CPU và nhiệt độ trên thiết bị thật.
 
@@ -161,7 +163,7 @@ Thử màn hình bằng một hình tĩnh, rồi hoạt ảnh đơn giản. Th�
 
 ## 7. Tổ chức mã nguồn dự kiến
 
-Chưa tạo mã nguồn trong bước lập kế hoạch này. Khi bắt đầu triển khai, có thể tách thành:
+Đã tạo `src/milu/app.py`, `src/milu/state.py`, `src/milu/ui/` và `tests/`. Các phần hội thoại, API, âm thanh và bộ nhớ dưới đây là cấu trúc dự kiến cho các mốc sau:
 
 - `src/milu/ui/`: khuôn mặt và hoạt ảnh.
 - `src/milu/conversation/`: điều phối và trạng thái hội thoại.
@@ -186,4 +188,5 @@ Cấu trúc có thể điều chỉnh sau bản thử. Ưu tiên ít thành ph�
 
 ## 9. Bước tiếp theo
 
-Bắt đầu bằng **Mốc 0 và Mốc 1**: xác định đúng màn hình rồi chạy khuôn mặt Milu với dữ liệu giả. Cách này kiểm chứng phần cứng và trải nghiệm trước khi phát sinh chi phí API hoặc xử lý dữ liệu hội thoại.
+Tiếp tục **Mốc 0 và Mốc 1**: xác định đúng model màn hình rồi chạy bản khuôn mặt ngoại tuyến trên Raspberry Pi 5. Phần mềm đã có thể chạy thử trên máy phát triển; chỉ chốt hoàn thành Mốc 1 sau khi kiểm tra kích thước hiển thị, thao tác thoát và độ ổn định trên thiết bị thật. Chưa cần khóa API cho bước này.
+

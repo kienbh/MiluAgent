@@ -1,0 +1,1 @@
+"""Display and animation components."""
